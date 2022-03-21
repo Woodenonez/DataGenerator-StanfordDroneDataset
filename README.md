@@ -20,5 +20,4 @@ Other parameters:
 - "all_video_idx" is all videos that are meant to be converted into datasets. 
 
 # Dataset structure
-Data - dataset folder - scence_video folder - frames + info csv\
-                      - dataset csv
+Data - dataset folder - scence_video folders + dataset csv - frames + info csv
