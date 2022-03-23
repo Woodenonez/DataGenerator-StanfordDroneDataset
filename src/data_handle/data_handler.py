@@ -115,10 +115,15 @@ class DelAlpha(object):
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
+    def __init__(self, traj_label=False) -> None:
+        self.traj_label = traj_label
 
     def __call__(self, sample):
         image, label = sample['image'], sample['label']
-        label = np.array([label['x'],label['y']])
+        if self.traj_label:
+            label = np.array(list(label.values()))
+        else:
+            label = np.array([label['x'],label['y']])
         # swap color axis, numpy: H x W x C -> torch: C X H X W
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
