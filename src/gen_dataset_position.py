@@ -21,7 +21,7 @@ print('\nGenerating dataset...')
 
 root_dir = Path(__file__).resolve().parents[1]
 data_dir = '/media/ze/Elements/User/Data/SDD/'
-save_path = os.path.join(root_dir, 'Data/SDD_Crossing_Ped5s')
+save_path = os.path.join(root_dir, 'Data/SDD_')
 
 past = 4
 img_saving_period = 10  # 30 FPS -> 3 FPS
@@ -32,22 +32,26 @@ maxT = 15 # 3 FPS -> 5 s
 
 test_split = 0.1 # if we split trajectories or not
 
-# all_video_idx = [list(range(7)), list(range(4)), list(range(5)), list(range(9)), 
-#                  list(range(15)), list(range(4)), list(range(12)), list(range(4))]
+scenario_name_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
+video_name_dict = {'bookstore':     [f'video{i}' for i in range(7)], 
+                   'coupa':         [f'video{i}' for i in range(4)], 
+                   'deathCircle':   [f'video{i}' for i in range(5)], 
+                   'gates':         [f'video{i}' for i in range(9)], 
+                   'hyang':         [f'video{i}' for i in range(15)], 
+                   'little':        [f'video{i}' for i in range(4)], 
+                   'nexus':         [f'video{i}' for i in range(12)], 
+                   'quad':          [f'video{i}' for i in range(4)]}
 
-all_video_idx = [[],[],[],[],[0,1,2,3,7,8,9,10,11,12]]
-
-for scenario_idx in range(len(all_video_idx)):
-    for video_idx in all_video_idx[scenario_idx]:
+verbose = True
+for scenario_name in scenario_name_list:
+    for video_name in video_name_dict[scenario_name]:
+        video_reader = ReadVideo(data_dir, scenario_name=scenario_name, video_name=video_name, verbose=verbose)
         verbose = False
-        if (scenario_idx==0) and (video_idx==0):
-            verbose = True
-        video_reader = ReadVideo(data_dir, scenario_idx=scenario_idx, video_idx=video_idx, verbose=verbose)
         if test_split == 0:
             utils_data.save_SDD_data(video_reader, save_path=save_path, period=img_saving_period)
         else:
             utils_data.save_SDD_data_part(video_reader, save_path=save_path, test_split=test_split, period=img_saving_period)
-        print(f'Scenario {scenario_idx}-{video_idx} images generated!')
+        print(f'Scenario {scenario_name}-{video_name} images generated!')
 
 if test_split == 0:
     utils_data.gather_all_data(save_path, past, minT=minT, maxT=maxT, period=dataset_gen_period) # go through all the obj folders and put them together in one CSV    

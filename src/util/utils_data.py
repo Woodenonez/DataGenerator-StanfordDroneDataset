@@ -54,12 +54,59 @@ def gather_all_data(data_dir: str, past: int, minT: int, maxT: int, period=1, sa
                 df_all = pd.concat([df_all, df_T], ignore_index=True)
     df_all.to_csv(os.path.join(save_dir, 'all_data.csv'), index=False)
 
+
+def gather_all_data_traj(data_dir: str, past: int, minT: int, maxT: int, period=1, save_dir=None) -> None:
+    # data_dir  -  video idx - imgs&csv
+    if save_dir is None:
+        save_dir = data_dir
+
+    column_name = [f't{i}' for i in range(0, past+1)] + ['ID', 'index'] + [f'T{i}' for i in range(minT, maxT+1)]
+    df_all = pd.DataFrame(columns=column_name)
+
+    video_folders = os.listdir(data_dir)
+
+    vcnt = 0 # cnt for videos
+    for vf in video_folders:
+        vcnt += 1
+        csv_name = glob.glob(os.path.join(data_dir, vf, '*.csv'))
+        df_video = pd.read_csv(csv_name[0])
+        print(f'\rProcess: video-{vcnt}/{len(video_folders)}', end='    ')
+        all_obj = df_video['ID'].unique()
+        
+        for i in range(len(all_obj)):
+            obj_id = all_obj[i]
+            df_obj = df_video[df_video['ID'] == obj_id]
+
+            sample_list = []
+            for i in range(len(df_obj)-past*period-maxT): # each sample
+                sample = []
+                ################## Sample START ##################
+                for j in range(past+1):
+                    time_step = df_obj.iloc[i+j*period]['t']
+                    this_x = df_obj.iloc[i+j*period]['x']
+                    this_y = df_obj.iloc[i+j*period]['y']
+                    obj_info = f'{time_step}_{this_x}_{this_y}'
+                    sample.append(obj_info)
+                sample.append(obj_id)
+                sample.append(df_obj.iloc[i+past+maxT]['index'])
+
+                for T in range(minT, maxT+1):
+                    sample.append(f'{df_obj.iloc[i+past+T]["x"]}_{df_obj.iloc[i+past+T]["y"]}')
+                ################## Sample E N D ##################
+                sample_list.append(sample)
+            df_T = pd.DataFrame(sample_list, columns=df_all.columns)
+            df_all = pd.concat([df_all, df_T], ignore_index=True)
+
+
+    df_all.to_csv(os.path.join(save_dir, 'all_data.csv'), index=False)
+
+
 def save_SDD_data(video_reader, save_path: str, period=1, resize_label=True) -> None:    # save as csv file
     # scenario indices: 0~7 (bookstore, coupa, deathCircle, gates, hyang,  little, nexus,  quad)
     # video indices:         0:0~6,     1:0~3, 2:0~4,       3:0~8, 4:0~14, 5:0~3,  6:0~11, 7:0~3
     #                        1          1      1            2      2       1       2       0
-    scene_idx = video_reader.scenario_idx
-    video_idx = video_reader.video_idx
+    scene_name = video_reader.scenario_name
+    video_name = video_reader.video_name
 
     id_list = []
     t_list = []   # time or time step
@@ -116,18 +163,18 @@ def save_SDD_data(video_reader, save_path: str, period=1, resize_label=True) -> 
             t_list.append(cnt)
             x_list.append(x)
             y_list.append(y)
-            idx_list.append(f'{scene_idx}_{video_idx}')
+            idx_list.append(f'{scene_name}_{video_name}')
 
         if save_path is None:
             cv2.imshow("frame", frame)
             cv2.waitKey()
         else:
-            folder = os.path.join(save_path,f'{scene_idx}_{video_idx}/')
+            folder = os.path.join(save_path,f'{scene_name}_{video_name}/')
             Path(folder).mkdir(parents=True, exist_ok=True)
             cv2.imwrite(os.path.join(folder,f'{cnt}.jpg'), frame)
 
         df = pd.DataFrame({'t':t_list, 'ID':id_list, 'x':x_list, 'y':y_list, 'index':idx_list}).sort_values(by='t', ignore_index=True)
-        df.to_csv(os.path.join(save_path, f'{scene_idx}_{video_idx}', f'{original_size[0]}_{original_size[1]}.csv'), index=False)
+        df.to_csv(os.path.join(save_path, f'{scene_name}_{video_name}', f'{original_size[0]}_{original_size[1]}.csv'), index=False)
             
     video_reader.cap.release()
     print()
@@ -137,8 +184,8 @@ def save_SDD_data_part(video_reader, save_path: str, test_split: float, period=1
     # video indices:         0:0~6,     1:0~3, 2:0~4,       3:0~8, 4:0~14, 5:0~3,  6:0~11, 7:0~3
     #                        1          1      1            2      2       1       2       0
     assert(0<test_split<1),('Split ratio must be in (0,1).')
-    scene_idx = video_reader.scenario_idx
-    video_idx = video_reader.video_idx
+    scene_name = video_reader.scenario_name
+    video_name = video_reader.video_name
 
     ### Split into training and testing sets
     all_id = np.unique(video_reader.df_data['ID'].values)
@@ -211,14 +258,14 @@ def save_SDD_data_part(video_reader, save_path: str, test_split: float, period=1
                 t_list_training.append(cnt)
                 x_list_training.append(x)
                 y_list_training.append(y)
-                idx_list_training.append(f'{scene_idx}_{video_idx}')
+                idx_list_training.append(f'{scene_name}_{video_name}')
             elif df_obj["ID"] in id_for_testing:
                 no_testing = False
                 id_list_testing.append(df_obj["ID"])
                 t_list_testing.append(cnt)
                 x_list_testing.append(x)
                 y_list_testing.append(y)
-                idx_list_testing.append(f'{scene_idx}_{video_idx}')
+                idx_list_testing.append(f'{scene_name}_{video_name}')
             else:
                 continue
 
@@ -227,21 +274,21 @@ def save_SDD_data_part(video_reader, save_path: str, test_split: float, period=1
             cv2.waitKey()
         else:
             if not no_training:
-                folder = os.path.join(save_path+'_training',f'{scene_idx}_{video_idx}/')
+                folder = os.path.join(save_path+'_training',f'{scene_name}_{video_name}/')
                 Path(folder).mkdir(parents=True, exist_ok=True)
                 cv2.imwrite(os.path.join(folder,f'{cnt}.jpg'), frame)
             if not no_testing:
-                folder = os.path.join(save_path+'_testing',f'{scene_idx}_{video_idx}/')
+                folder = os.path.join(save_path+'_testing',f'{scene_name}_{video_name}/')
                 Path(folder).mkdir(parents=True, exist_ok=True)
                 cv2.imwrite(os.path.join(folder,f'{cnt}.jpg'), frame)
 
         if t_list_training:
             df_training = pd.DataFrame({'t':t_list_training, 'ID':id_list_training, 'x':x_list_training, 'y':y_list_training, 'index':idx_list_training}).sort_values(by='t', ignore_index=True)
-            df_training.to_csv(os.path.join(save_path+'_training', f'{scene_idx}_{video_idx}', f'{original_size[0]}_{original_size[1]}.csv'), index=False)
+            df_training.to_csv(os.path.join(save_path+'_training', f'{scene_name}_{video_name}', f'{original_size[0]}_{original_size[1]}.csv'), index=False)
 
         if t_list_testing:
             df_testing = pd.DataFrame({'t':t_list_testing, 'ID':id_list_testing, 'x':x_list_testing, 'y':y_list_testing, 'index':idx_list_testing}).sort_values(by='t', ignore_index=True)
-            df_testing.to_csv(os.path.join(save_path+'_testing', f'{scene_idx}_{video_idx}', f'{original_size[0]}_{original_size[1]}.csv'), index=False)
+            df_testing.to_csv(os.path.join(save_path+'_testing', f'{scene_name}_{video_name}', f'{original_size[0]}_{original_size[1]}.csv'), index=False)
 
     video_reader.cap.release()
     print()
