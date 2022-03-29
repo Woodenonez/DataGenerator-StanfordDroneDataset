@@ -1,4 +1,4 @@
-import skimage
+import skimage.transform
 import numpy as np
 
 import torch
@@ -8,7 +8,7 @@ from torch.utils.data import DataLoader, random_split
 '''
 
 class DataHandler():
-    def __init__(self, dataset, batch_size=64, shuffle=True, validation_prop=0.2, validation_cache=64):
+    def __init__(self, dataset, batch_size=64, shuffle=True, validation_prop=0.2, validation_cache=64, num_workers=0):
         self.__val_p = validation_prop
         self.dataset = dataset
         if 0<validation_prop<1:
@@ -18,11 +18,11 @@ class DataHandler():
             self.dataset_val = []
             self.dl_val = []
 
-        self.dl = DataLoader(self.dataset_train, batch_size, shuffle) # create the dataloader from the dataset
+        self.dl = DataLoader(self.dataset_train, batch_size, shuffle, num_workers=num_workers) # create the dataloader from the dataset
         self.__iter = iter(self.dl)
 
         if self.dataset_val:
-            self.dl_val = DataLoader(self.dataset_val, batch_size=validation_cache, shuffle=shuffle)
+            self.dl_val = DataLoader(self.dataset_val, batch_size=validation_cache, shuffle=shuffle, num_workers=num_workers)
             self.__iter_val = iter(self.dl_val)
 
     def split_dataset(self):
