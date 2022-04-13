@@ -41,16 +41,18 @@ def check_SDD(data_dir, scenario_list, video_list, vis=False):
                     x_id = (df_id['xmin']+df_id['xmax'])/2
                     y_id = (df_id['ymin']+df_id['ymax'])/2
                     traj_id = np.vstack((x_id.to_numpy(), y_id.to_numpy()))
-                    ax.plot(traj_id[0,:],traj_id[1,:],'.')
-                    plt.pause(0.1)
-                    input()
+                    ax.plot(traj_id[0,:],traj_id[1,:],'.', markersize=1)
+                    # plt.pause(0.1)
                 plt.show()
 
 
 if __name__ == '__main__':
     data_dir = '/media/ze/Elements/User/Data/SDD/'
 
-    scenario_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
-    video_list = [f'video{i}' for i in range(15)]
+    # scenario_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
+    # video_list = [f'video{i}' for i in range(15)]
 
-    check_SDD(data_dir, scenario_list, video_list, vis=False)
+    scenario_list = ['nexus']
+    video_list = [f'video{i}' for i in range(159)]
+
+    check_SDD(data_dir, scenario_list, video_list, vis=True)

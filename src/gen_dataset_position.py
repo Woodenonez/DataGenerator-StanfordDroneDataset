@@ -21,10 +21,10 @@ print('\nGenerating dataset...')
 
 root_dir = Path(__file__).resolve().parents[1]
 data_dir = '/media/ze/Elements/User/Data/SDD/'
-save_path = os.path.join(root_dir, 'Data/SDD_')
+save_path = os.path.join(root_dir, 'Data/ped/SDD_1v')
 
 past = 4
-img_saving_period = 10  # 30 FPS -> 3 FPS
+img_saving_period = 10  # original 30 FPS -> 3 FPS
 dataset_gen_period = 1
 
 minT = 15
@@ -32,15 +32,18 @@ maxT = 15 # 3 FPS -> 5 s
 
 test_split = 0.1 # if we split trajectories or not
 
-scenario_name_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
-video_name_dict = {'bookstore':     [f'video{i}' for i in range(7)], 
-                   'coupa':         [f'video{i}' for i in range(4)], 
-                   'deathCircle':   [f'video{i}' for i in range(5)], 
-                   'gates':         [f'video{i}' for i in range(9)], 
-                   'hyang':         [f'video{i}' for i in range(15)], 
-                   'little':        [f'video{i}' for i in range(4)], 
-                   'nexus':         [f'video{i}' for i in range(12)], 
-                   'quad':          [f'video{i}' for i in range(4)]}
+# scenario_name_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
+# video_name_dict = {'bookstore':     [f'video{i}' for i in range(7)], 
+#                    'coupa':         [f'video{i}' for i in range(4)], 
+#                    'deathCircle':   [f'video{i}' for i in range(5)], 
+#                    'gates':         [f'video{i}' for i in range(9)], 
+#                    'hyang':         [f'video{i}' for i in range(15)], 
+#                    'little':        [f'video{i}' for i in range(4)], 
+#                    'nexus':         [f'video{i}' for i in range(12)], 
+#                    'quad':          [f'video{i}' for i in range(4)]}
+
+scenario_name_list = ['hyang']
+video_name_dict = {'hyang': [f'video{i}' for i in [0]]}
 
 verbose = True
 for scenario_name in scenario_name_list:

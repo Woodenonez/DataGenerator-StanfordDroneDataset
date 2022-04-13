@@ -234,7 +234,7 @@ def save_SDD_data_part(video_reader, save_path: str, test_split: float, period=1
         ### Screening conditions
         if df_frame.shape[0] < 1:
             continue
-        df_frame = df_frame.loc[df_frame['label']=='Pedestrian'] # only pedestrians!!!
+        # df_frame = df_frame.loc[df_frame['label']=='Pedestrian'] # only pedestrians!!!
 
         no_testing = True
         no_training = True

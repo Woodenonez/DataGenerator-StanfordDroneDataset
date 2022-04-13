@@ -78,11 +78,15 @@ class ReadVideo():
         self._idx_frame = -1
         self.cap.set(cv2.CAP_PROP_POS_FRAMES, 0)
 
-    def read_frame_clean(self):
-        ret, frame = self.cap.read()
-        assert(ret),('No frame available from the source.')
-        df_frame = self.df_data[self.df_data['frame']==self._idx_frame]
-        self._idx_frame += 1
+    def read_frame_clean(self, after=0):
+        if after<1:
+            after = 1
+        while after>0:
+            ret, frame = self.cap.read()
+            assert(ret),('No frame available from the source.')
+            df_frame = self.df_data[self.df_data['frame']==self._idx_frame]
+            self._idx_frame += 1
+            after -= 1
         return frame, df_frame
 
     def read_frame_annotated(self, show_lost=False):
