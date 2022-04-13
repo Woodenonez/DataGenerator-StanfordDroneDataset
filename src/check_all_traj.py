@@ -18,7 +18,7 @@ def check_SDD(data_dir, scenario_list, video_list, vis=False):
             video_reader = ReadVideo(data_dir, scenario_name, video_name, verbose=False)
             duration = int(video_reader.info('nframes'))/video_reader.info('fps')
             resolution = (int(video_reader.info('width')), int(video_reader.info('height')))
-            base_map, _ = video_reader.read_frame_clean()
+            base_map, _ = video_reader.read_frame_clean(after=200)
             video_reader.cap.release()
 
             df = video_reader.df_data
@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # scenario_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
     # video_list = [f'video{i}' for i in range(15)]
 
-    scenario_list = ['nexus']
+    scenario_list = ['quad']
     video_list = [f'video{i}' for i in range(159)]
 
     check_SDD(data_dir, scenario_list, video_list, vis=True)

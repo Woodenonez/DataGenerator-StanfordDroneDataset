@@ -63,7 +63,7 @@ def gather_all_data_traj(data_dir: str, past: int, minT: int, maxT: int, period=
     column_name = [f't{i}' for i in range(0, past+1)] + ['ID', 'index'] + [f'T{i}' for i in range(minT, maxT+1)]
     df_all = pd.DataFrame(columns=column_name)
 
-    video_folders = os.listdir(data_dir)
+    video_folders = [x for x in os.listdir(data_dir) if '.' not in x]
 
     vcnt = 0 # cnt for videos
     for vf in video_folders:
@@ -292,5 +292,72 @@ def save_SDD_data_part(video_reader, save_path: str, test_split: float, period=1
 
     video_reader.cap.release()
     print()
+
+def save_SDD_data_seg(seg_reader, save_path: str, period=1, resize_label=True) -> None:    # save as csv file
+    # scenario indices: 0~7 (bookstore, coupa, deathCircle, gates, hyang,  little, nexus,  quad)
+    # video indices:         0:0~6,     1:0~3, 2:0~4,       3:0~8, 4:0~14, 5:0~3,  6:0~11, 7:0~3
+    #                        1          1      1            2      2       1       2       0
+    scene_name = seg_reader.scenario_name
+    video_name = seg_reader.video_name
+    img_seg, img_ref = (seg_reader.img_seg, seg_reader.img_ref)
+
+    swapHW = False
+    ### Ensure H<W
+    if img_ref.shape[0] > img_ref.shape[1]:
+        img_ref = img_ref.swapaxes(0,1)
+        img_seg = img_seg.swapaxes(0,1)
+        swapHW = True
+    ### Resize
+    original_size = img_ref.shape[:2][::-1] # WxH
+    new_size = (595, 326)                   # WxH, TrajNet:595x326 [or (576, 320)]
+    img_ref = cv2.resize(img_ref, new_size)
+    img_seg = cv2.resize(img_seg, new_size)
+
+    id_list = []
+    t_list = []   # time or time step
+    x_list = []   # x coordinate
+    y_list = []   # y coordinate
+    idx_list = [] # more information (e.g. scene and video index)
+
+    anno = seg_reader.df_data # ['ID','xmin','ymin','xmax','ymax','frame','lost','occluded','generated','label']
+    for k in range(0, seg_reader.nframes, period):
+        df_frame = anno.loc[anno['frame']==k]
+
+        ### Screening conditions
+        if df_frame.shape[0] < 1:
+            continue
+        df_frame = df_frame.loc[df_frame['label']=='Pedestrian'] # only pedestrians!!!
+
+        ### Start to save trajectories
+        for j in range(len(df_frame)):
+            df_obj = df_frame.iloc[j,:]
+            if df_obj['lost'] == 1: # if the object is lost, don't save it
+                continue
+
+            x = (df_obj['xmin'] + df_obj['xmax']) // 2
+            y = (df_obj['ymin'] + df_obj['ymax']) // 2
+            if swapHW: # if H W are swapped
+                x,y = y,x
+            if resize_label:
+                x *= new_size[0]/original_size[0]
+                y *= new_size[1]/original_size[1]
+
+            id_list.append(df_obj["ID"])
+            t_list.append(k)
+            x_list.append(x)
+            y_list.append(y)
+            idx_list.append(f'{scene_name}_{video_name}')
+
+
+        folder = os.path.join(save_path, f'{scene_name}_{video_name}/')
+        Path(folder).mkdir(parents=True, exist_ok=True)
+
+        df = pd.DataFrame({'t':t_list, 'ID':id_list, 'x':x_list, 'y':y_list, 'index':idx_list}).sort_values(by='t', ignore_index=True)
+        df.to_csv(os.path.join(folder, f'{original_size[0]}_{original_size[1]}.csv'), index=False)
+
+    cv2.imwrite(os.path.join(folder,'reference.jpg'), img_ref)
+    cv2.imwrite(os.path.join(folder,'label.png'), img_seg)
+
+    cv2.imwrite(os.path.join(save_path,'reference.jpg'), img_ref) # for later checking shape
 
 

@@ -1,6 +1,9 @@
-import sys, glob, json
+import os, sys
+import glob
+import json
 
 import numpy as np
+import pandas as pd
 
 import cv2
 import PIL.Image
@@ -10,6 +13,32 @@ class GenSegmentation(): # use labelme: labelme_json_to_dataset [*.json] -o [dir
     def __init__(self, label_dir, verbose=True):
         pass
 
+class ReadSegResult():
+    # scenario indices: 0~7 (bookstore, coupa, deathCircle, gates, hyang,  little, nexus,  quad)
+    # video indices:         0:0~6,     1:0~3, 2:0~4,       3:0~8, 4:0~14, 5:0~3,  6:0~11, 7:0~3
+    #                        1          1      1            2      2       1       2       0
+
+    def __init__(self, path, scenario_name: str, video_name: str, verbose=True) -> None:
+        self.scenario_name = scenario_name
+        self.video_name = video_name
+
+        path_op = os.path.join(path, scenario_name, video_name)
+
+        self.img_seg = np.asarray(PIL.Image.open(os.path.join(path_op, 'label.png')))
+        self.img_ref = np.asarray(PIL.Image.open(os.path.join(path_op, 'reference.jpg')))[:,:,::-1]
+
+        self.df_data = pd.read_csv(os.path.join(path_op, 'annotations.txt'), 
+                                    sep=' ', header=None,
+                                    names=['ID','xmin','ymin','xmax','ymax',
+                                    'frame','lost','occluded','generated','label'])
+
+        if verbose:
+            print(f'Reading the segmentation result from {scenario_name}/{video_name}...')
+
+        self.analyze_anno()
+
+    def analyze_anno(self):
+        self.nframes = int(self.df_data['frame'].max())
 
 class ReadSegmentation():
 
@@ -91,6 +120,21 @@ class ReadSegmentation():
 
 if __name__ == '__main__':
 
-    label_dir = 'SDD_seg/Bookstore/'
-    reader = ReadSegmentation(label_dir)
-    reader.plot_labels(-1)
+    # label_dir = 'SDD_seg/Bookstore/'
+    # reader = ReadSegmentation(label_dir)
+    # reader.plot_labels(-1)
+
+    from pathlib import Path
+    root_dir = Path(__file__).resolve().parents[1]
+    seg_path = os.path.join(root_dir, 'Data/segmentation_source')
+    seg_reader = ReadSegResult(seg_path, 'deathCircle', 'video0')
+
+    this_df = seg_reader.df_data.loc[seg_reader.df_data['frame']==0]
+
+    print(this_df)
+
+    img_ref = seg_reader.img_ref
+    img_seg = seg_reader.img_seg
+
+    cv2.imshow('k', cv2.resize(img_seg, (int(img_seg.shape[0]/2), int(img_seg.shape[1]/2)))*100)
+    cv2.waitKey(0)
