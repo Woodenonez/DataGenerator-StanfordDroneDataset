@@ -52,7 +52,7 @@ class ImageStackDataset(Dataset):
         traj = []
         if self.dyn_env:
             for i in range(self.input_len):
-                img_name = info['p{}'.format(i)].split('_')[-1] + self.ext
+                img_name = info['p{}'.format(i)].split('_')[-1] + '.' + self.ext
                 img_path = os.path.join(self.root_dir, str(index), img_name)
                 this_x = float(info['p{}'.format(i)].split('_')[0])
                 this_y = float(info['p{}'.format(i)].split('_')[1])
@@ -159,7 +159,7 @@ class ImageStackDatasetZIP(Dataset):
         traj = []
         if self.dyn_env:
             for i in range(self.input_len):
-                img_name = info['p{}'.format(i)].split('_')[-1] + self.ext
+                img_name = info['p{}'.format(i)].split('_')[-1] + '.' + self.ext
                 img_path = os.path.join(self.root_dir, str(index), img_name)
                 this_x = float(info['p{}'.format(i)].split('_')[0])
                 this_y = float(info['p{}'.format(i)].split('_')[1])
