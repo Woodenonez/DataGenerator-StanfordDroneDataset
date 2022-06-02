@@ -1,7 +1,7 @@
-import skimage.transform
 import numpy as np
 
 import torch
+import torchvision
 from torch.utils.data import DataLoader, random_split
 
 '''
@@ -62,8 +62,13 @@ class DataHandler():
     def return_length_dl(self):
         return len(self.dl) # the number of batches, only for training dataset
 
+
 class Rescale(object):
-    def __init__(self, output_size, tolabel=False):
+    def __init__(self, output_size:tuple, tolabel=False):
+        '''
+        Args:
+            output_size - (height * width)
+        '''
         super().__init__()
         assert isinstance(output_size, tuple)
         self.output_size = output_size
@@ -73,10 +78,13 @@ class Rescale(object):
         image, label = sample['image'], sample['label']
         h, w = image.shape[:2]
         h_new, w_new = self.output_size
+        if (h==h_new) & (w==w_new): # if no need to resize, skip
+            return sample
 
-        img = skimage.transform.resize(image, (h_new,w_new))
+        # img = skimage.transform.resize(image, (h_new,w_new))
+        img = torchvision.transforms.Resize((h_new,w_new))(image)
         if self.tolabel:
-            label['x'], label['y'] = label['x']*w_new/w, label['y']*h_new/h
+            label = [(x[0]*w_new/w, x[1]*h_new/h) for x in label]
         return {'image':img, 'label':label}
 
 class ToGray(object):
@@ -115,15 +123,9 @@ class DelAlpha(object):
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
-    def __init__(self, traj_label=False) -> None:
-        self.traj_label = traj_label
-
     def __call__(self, sample):
         image, label = sample['image'], sample['label']
-        if self.traj_label:
-            label = np.array(list(label.values()))
-        else:
-            label = np.array([label['x'],label['y']])
+        label = np.array(label)
         # swap color axis, numpy: H x W x C -> torch: C X H X W
         image = image.transpose((2, 0, 1))
         return {'image': torch.from_numpy(image),
@@ -143,8 +145,8 @@ class MaxNormalize(object):
             image[:,:,:i] = image[:,:,:i]/self.mp[i]
         if self.ml is not None:
             if self.ml is tuple:
-                label['x'], label['y'] = label['x']/self.ml[0], label['y']/self.ml[1]
+                label = [(x[0]/self.ml[0], x[1]/self.ml[1]) for x in label]
             else:
-                label['x'], label['y'] = label['x']/self.ml, label['y']/self.ml
+                label = [(x[0]/self.ml, x[1]/self.ml) for x in label]
         return {'image':image, 'label':label}
 

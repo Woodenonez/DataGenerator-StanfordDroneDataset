@@ -29,7 +29,7 @@ class ReadVideo():
     # video indices:         0:0~6,     1:0~3, 2:0~4,       3:0~8, 4:0~14, 5:0~3,  6:0~11, 7:0~3
     #                        1          1      1            2      2       1       2       0
 
-    def __init__(self, path, scenario_name: str, video_name: str, verbose=True):
+    def __init__(self, path, scenario_name:str, video_name:str, verbose=True):
 
         self.scenario_name = scenario_name
         self.video_name = video_name

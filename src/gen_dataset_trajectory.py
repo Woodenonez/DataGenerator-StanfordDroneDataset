@@ -1,13 +1,9 @@
 import os, sys
 from pathlib import Path
 
-import numpy as np
-import pandas as pd
-
-import matplotlib.pyplot as plt
-
 from util import utils_data
-from load_video import ReadVideo
+from util import utils_preprocess
+import load_video
 
 print('\nGenerating dataset...')
 
@@ -21,7 +17,8 @@ print('\nGenerating dataset...')
 
 root_dir = Path(__file__).resolve().parents[1]
 data_dir = '/media/ze/Elements/User/Data/SDD/'
-save_path = os.path.join(root_dir, 'Data/SDD_1vtr')
+# save_path = os.path.join(root_dir, 'Data/SDD_1vtr')
+save_path = os.path.join(root_dir, 'Data/test')
 
 past = 4
 img_saving_period = 10  # 30 FPS -> 3 FPS
@@ -30,7 +27,7 @@ dataset_gen_period = 1
 minT = 1
 maxT = 15 # 3 FPS -> 5 s
 
-test_split = 0.1 # if we split trajectories or not
+test_split = 0 # if we split trajectories or not
 
 # scenario_name_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
 # video_name_dict = {'bookstore':     [f'video{i}' for i in range(7)], 
@@ -44,28 +41,35 @@ test_split = 0.1 # if we split trajectories or not
 
 scenario_name_list = ['hyang']
 video_name_dict = {'hyang': [f'video{i}' for i in [0]]}
+tr_name_list = ['',   'fliplr',                'rot180',             'rot180_fliplr']
+tr_list      = [None, utils_preprocess.fliplr, utils_preprocess.rot, utils_preprocess.rot_n_fliplr]
 
 verbose = True
-# for scenario_name in scenario_name_list:
-#     for video_name in video_name_dict[scenario_name]:
-#         video_reader = ReadVideo(data_dir, scenario_name=scenario_name, video_name=video_name, verbose=verbose)
-#         verbose = False
-#         if test_split == 0:
-#             utils_data.save_SDD_data(video_reader, save_path=save_path, period=img_saving_period)
-#         else:
-#             utils_data.save_SDD_data_part(video_reader, save_path=save_path, test_split=test_split, period=img_saving_period)
-#         print(f'Scenario {scenario_name}-{video_name} images generated!')
+for scenario_name in scenario_name_list:
+    for video_name in video_name_dict[scenario_name]:
+        for tr_name, tr in zip(tr_name_list, tr_list):
+            video_reader = load_video.ReadVideo(data_dir, scenario_name=scenario_name, video_name=video_name, verbose=verbose)
+            verbose = False
+            if test_split == 0:
+                utils_data.save_SDD_data(video_reader, save_path=save_path, period=img_saving_period, tr_name=tr_name, tr=tr)
+            else:
+                utils_data.save_SDD_data_split(video_reader, save_path=save_path, test_split=test_split, period=img_saving_period, tr_name=tr_name, tr=tr)
+            print(f'Scenario {scenario_name}-{video_name}-{tr_name} images generated!')
 
 if test_split == 0:
-    utils_data.gather_all_data_traj(save_path, past, minT=minT, maxT=maxT, period=dataset_gen_period) # go through all the obj folders and put them together in one CSV    
+    utils_data.gather_all_data_trajectory(save_path, past, minT=minT, maxT=maxT, period=dataset_gen_period) # go through all the obj folders and put them together in one CSV    
 else:
-    utils_data.gather_all_data_traj(save_path+'_training', past, minT=minT, maxT=maxT, period=dataset_gen_period) # go through all the obj folders and put them together in one CSV
-    utils_data.gather_all_data_traj(save_path+'_testing', past, minT=minT, maxT=maxT, period=dataset_gen_period) # go through all the obj folders and put them together in one CSV
+    utils_data.gather_all_data_trajectory(save_path+'_training', past, minT=minT, maxT=maxT, period=dataset_gen_period) # go through all the obj folders and put them together in one CSV
+    utils_data.gather_all_data_trajectory(save_path+'_testing', past, minT=minT, maxT=maxT, period=dataset_gen_period) # go through all the obj folders and put them together in one CSV
 print('Final CSV generated!')
 
 sys.exit(0)
 
 ### Trajectory example
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 anno = os.path.join(data_dir, 'annotations/bookstore/video0/annotations.txt')
 df_terms = ['ID','xmin','ymin','xmax','ymax','frame','lost','occluded','generated','label']
 #            0    213    1038   241    1072   10000   1      0          0          "Biker"
