@@ -33,7 +33,7 @@ class ImageStackDataset(Dataset):
         self.dyn_env = dynamic_env
         self.pred_traj = pred_traj
 
-        self.ext = '.jpg'  # should '.'
+        self.ext = 'jpg'  # should not have '.'
         self.csv_str = 'p' # in csv files, 'p' means position
 
         self.input_len = len([x for x in list(self.info_frame) if self.csv_str in x]) # length of input time step
@@ -112,7 +112,7 @@ class ImageStackDataset(Dataset):
 
     def check_img_shape(self):
         info = self.info_frame.iloc[0]
-        img_name = str(info['t']) + self.ext
+        img_name = str(info['t']) + '.' + self.ext
         video_folder = info['index']
         img_path = os.path.join(self.root_dir, video_folder, img_name)
         image = self.togray(io.imread(img_path))
@@ -140,7 +140,7 @@ class ImageStackDatasetZIP(Dataset):
         self.dyn_env = dynamic_env
         self.pred_traj = pred_traj
 
-        self.ext = '.jpg'
+        self.ext = 'jpg'
         self.csv_str = 'p' # in csv files, 'p' means position
 
         self.input_len = len([x for x in list(self.info_frame) if self.csv_str in x]) # length of input time step
@@ -219,7 +219,7 @@ class ImageStackDatasetZIP(Dataset):
 
     def check_img_shape(self):
         info = self.info_frame.iloc[0]
-        img_name = str(info['t']) + self.ext
+        img_name = str(info['t']) + '.' + self.ext
         video_folder = info['index']
         img_path = os.path.join(self.root_dir, video_folder, img_name)
         image = self.togray(io.imread(img_path))
