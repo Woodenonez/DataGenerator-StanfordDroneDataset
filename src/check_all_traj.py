@@ -52,7 +52,7 @@ if __name__ == '__main__':
     # scenario_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
     # video_list = [f'video{i}' for i in range(15)]
 
-    scenario_list = ['quad']
-    video_list = [f'video{i}' for i in range(159)]
+    scenario_list = ['hyang']
+    video_list = [f'video{i}' for i in range(1)]
 
     check_SDD(data_dir, scenario_list, video_list, vis=True)

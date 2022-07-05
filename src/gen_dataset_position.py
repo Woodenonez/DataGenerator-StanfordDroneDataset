@@ -22,7 +22,7 @@ print('\nGenerating dataset...')
 
 root_dir = Path(__file__).resolve().parents[1]
 data_dir = '/media/ze/Elements/User/Data/SDD/'
-save_path = os.path.join(root_dir, 'Data/SDD_15_train')
+save_path = os.path.join(root_dir, 'Data/SDDsmall_15_train')
 # tr_name_list = ['',   'fliplr',                'rot180',             'rot180_fliplr']
 # tr_list      = [None, utils_preprocess.fliplr, utils_preprocess.rot, utils_preprocess.rot_n_fliplr]
 tr_name_list = ['']
@@ -38,23 +38,35 @@ maxT = 15 # 3 FPS -> 5 s
 test_split = 0 # if we split trajectories or not
 
 scenario_name_list = ['bookstore', 'coupa', 'deathCircle', 'gates', 'hyang', 'little', 'nexus', 'quad']
+# video_name_dict_train = {'bookstore':     [f'video{i}' for i in [0,1,3,4,5,6]], 
+#                          'coupa':         [f'video{i}' for i in [0,1,3]], 
+#                          'deathCircle':   [f'video{i}' for i in [1,2,3,4]], 
+#                          'gates':         [f'video{i}' for i in [0,1,2,4,5,7,8]], 
+#                          'hyang':         [f'video{i}' for i in [0,1,2,3,4,5,6,7,8,9,10,11,12]], 
+#                          'little':        [f'video{i}' for i in [0,1,3]], 
+#                          'nexus':         [f'video{i}' for i in [0,1,2,4,5,6,7,8,9,10]], 
+#                          'quad':          [f'video{i}' for i in [0,1,2,3]]}
+# video_name_dict_test  = {'bookstore':     [f'video{i}' for i in [2]], 
+#                          'coupa':         [f'video{i}' for i in [2]], 
+#                          'deathCircle':   [f'video{i}' for i in [0]], 
+#                          'gates':         [f'video{i}' for i in [3, 6]], 
+#                          'hyang':         [f'video{i}' for i in [13, 14]], 
+#                          'little':        [f'video{i}' for i in [2]], 
+#                          'nexus':         [f'video{i}' for i in [3, 11]], 
+#                          'quad':          []}
 video_name_dict_train = {'bookstore':     [f'video{i}' for i in [0,1,3,4,5,6]], 
-                         'coupa':         [f'video{i}' for i in [0,1,3]], 
                          'deathCircle':   [f'video{i}' for i in [1,2,3,4]], 
-                         'gates':         [f'video{i}' for i in [0,1,2,4,5,7,8]], 
-                         'hyang':         [f'video{i}' for i in [0,1,2,3,4,5,6,7,8,9,10,11,12]], 
-                         'little':        [f'video{i}' for i in [0,1,3]], 
-                         'nexus':         [f'video{i}' for i in [0,1,2,4,5,6,7,8,9,10]], 
-                         'quad':          [f'video{i}' for i in [0,1,2,3]]}
+                         'gates':         [f'video{i}' for i in [0,1,2,4]], 
+                         'hyang':         [f'video{i}' for i in [0,1,2,3,4,5]], 
+                         'little':        [f'video{i}' for i in [1,3]], 
+                         'nexus':         [f'video{i}' for i in [0,1,2,6,7,8]]}
 video_name_dict_test  = {'bookstore':     [f'video{i}' for i in [2]], 
-                         'coupa':         [f'video{i}' for i in [2]], 
                          'deathCircle':   [f'video{i}' for i in [0]], 
                          'gates':         [f'video{i}' for i in [3, 6]], 
-                         'hyang':         [f'video{i}' for i in [13, 14]], 
+                         'hyang':         [f'video{i}' for i in [11, 12]], 
                          'little':        [f'video{i}' for i in [2]], 
-                         'nexus':         [f'video{i}' for i in [3, 11]], 
-                         'quad':          []}
-video_name_dict = video_name_dict_test
+                         'nexus':         [f'video{i}' for i in [11]]}
+video_name_dict = video_name_dict_train
 
 # scenario_name_list = ['hyang']
 # video_name_dict = {'hyang': [f'video{i}' for i in [0]]}
